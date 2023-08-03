@@ -5,17 +5,18 @@ function backup_user_home() {
     local user="$1"
     local backup_parent_dir="/var/backups/$(date +'%Y_%m_%d')"
     local user_backup_dir="$backup_parent_dir/$user"
-    local backup_name="backupName"
+    local backup_name="backup"
 
     if [ -d "/home/$user" ]; then
         mkdir -p "$user_backup_dir"
         chown -R "$user" "$user_backup_dir"
 
-        local backup_file="$user_backup_dir/${backup_name}_$(date +'%Y_%m_%d').tar.gz.gpg"
+        local backup_file="$user_backup_dir/${backup_name}_$(date +'%Y_%m_%d').gpg"
 
         # Use --batch and --passphrase options with gpg for non-interactive passphrase input
         BACKUP_PASSWORD=$(grep '^BACKUP_PASSWORD=' /etc/credentials.conf | cut -d '=' -f2)
-	tar czf -C "/home" "$user" | gpg --batch --symmetric --cipher-algo AES256 --passphrase "$BACKUP_PASSWORD" > "$backup_file"
+        
+	gpg --batch --symmetric --cipher-algo AES256 --passphrase "$BACKUP_PASSWORD" > "$backup_file"
 
         echo "Backup for user $user completed: $backup_file"
     else
